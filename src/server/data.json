@@ -1,0 +1,28 @@
+{
+  "events": [
+    {
+      "id": 1,
+      "title": "Learn TypeScript",
+      "startDate": "2021-11-08T18:38:12.435Z",
+      "endDate": "2021-11-08T20:38:12.435Z"
+    },
+    {
+      "id": 2,
+      "title": "Learn Redux",
+      "startDate": "some start date",
+      "endDate": "some end date"
+    },
+    {
+      "id": 3,
+      "title": "Learn Next.js",
+      "startDate": "some start date",
+      "endDate": "some end date"
+    },
+    {
+      "id": 4,
+      "title": "Get better at CSS / SCSS",
+      "startDate": "some start date",
+      "endDate": "some end date"
+    }
+  ]
+}
