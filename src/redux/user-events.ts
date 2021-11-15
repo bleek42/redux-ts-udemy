@@ -2,7 +2,7 @@ import { RootState } from './store';
 import { Action, AnyAction } from 'redux';
 import { ThunkAction } from 'redux-thunk';
 
-interface UserEvent {
+export interface UserEvent {
   id: number;
   title: string;
   startDate: Date | string;
@@ -14,16 +14,28 @@ interface UserEventsState {
   allIds: UserEvent['id'][];
 }
 
+const LOAD_REQUEST = 'userEvents/load_request';
 interface LoadRequestAction extends Action<typeof LOAD_REQUEST> {}
 
-const LOAD_REQUEST = 'userEvents/load_request';
-
-interface LoadSuccessAction extends Action<typeof LOAD_SUCCESS> {}
-
 const LOAD_SUCCESS = 'userEvents/load-success';
+interface LoadSuccessAction extends Action<typeof LOAD_SUCCESS> {
+  payload: {
+    events: UserEvent[];
+  };
+}
+
+const LOAD_FAILURE = 'userEvents/load-failure';
+interface LoadFailureAction extends Action<typeof LOAD_FAILURE> {
+  error: string;
+}
 
 export const loadUserEvents =
-  (): ThunkAction<void, RootState, undefined, LoadRequestAction> =>
+  (): ThunkAction<
+    void,
+    RootState,
+    undefined,
+    LoadRequestAction | LoadSuccessAction | LoadFailureAction
+  > =>
   async (dispatch, getState) => {
     dispatch({
       type: LOAD_REQUEST,
@@ -32,10 +44,25 @@ export const loadUserEvents =
     try {
       const response = await fetch('http://localhost:3001/events');
       const events: UserEvent[] = await response.json();
+      dispatch({
+        type: LOAD_SUCCESS,
+        payload: { events },
+      });
     } catch {
       console.error('error in load request!');
+      dispatch({
+        type: LOAD_FAILURE,
+        error: 'Failed to load user events!',
+      });
     }
   };
+
+const selectUserEventsState = (rootState: RootState) => rootState.userEvents;
+
+export const selectUserEventsArray = (rootState: RootState) => {
+  const state = selectUserEventsState(rootState);
+  return state?.allIds.map((id) => state?.byIds[id]);
+};
 
 const initialState: UserEventsState = {
   byIds: {},
@@ -44,9 +71,19 @@ const initialState: UserEventsState = {
 
 const userEventsReducer = (
   state: UserEventsState = initialState,
-  action: AnyAction
+  action: LoadSuccessAction
 ) => {
   switch (action.type) {
+    case LOAD_SUCCESS:
+      const { events } = action.payload;
+      return {
+        ...state,
+        allIds: events.map(({ id }) => id),
+        byids: events.reduce<UserEventsState['byIds']>((byIds, event) => {
+          byIds[event.id] = event;
+          return byIds;
+        }, {}),
+      };
     default:
       return state;
   }
