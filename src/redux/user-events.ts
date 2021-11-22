@@ -44,12 +44,13 @@ export const loadUserEvents =
     try {
       const response = await fetch('http://localhost:3001/events');
       const events: UserEvent[] = await response.json();
+      console.log(events);
       dispatch({
         type: LOAD_SUCCESS,
         payload: { events },
       });
-    } catch {
-      console.error('error in load request!');
+    } catch (err) {
+      console.error(err);
       dispatch({
         type: LOAD_FAILURE,
         error: 'Failed to load user events!',
@@ -61,7 +62,7 @@ const selectUserEventsState = (rootState: RootState) => rootState.userEvents;
 
 export const selectUserEventsArray = (rootState: RootState) => {
   const state = selectUserEventsState(rootState);
-  return state?.allIds.map((id) => state?.byIds[id]);
+  return state.allIds.map((id) => state.byIds[id]);
 };
 
 const initialState: UserEventsState = {

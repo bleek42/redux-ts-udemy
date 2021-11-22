@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
+
 import { RootState } from '../redux/store';
 import {
   loadUserEvents,
   selectUserEventsArray,
   UserEvent,
 } from '../redux/user-events';
+import { appendZeroes } from '../utils/appendZeroes';
 
 import '../styles/Calendar.css';
 
@@ -27,7 +29,7 @@ const createDateKey = (date: Date) => {
   const year = date.getUTCFullYear();
   const month = date.getUTCMonth() + 1;
   const day = date.getUTCDay();
-  return `${year}-${month}-${day}`;
+  return `${year}-${appendZeroes(month)}-${appendZeroes(day)}`;
 };
 
 const groupEventsByDay = (events: UserEvent[]) => {
@@ -50,9 +52,8 @@ const groupEventsByDay = (events: UserEvent[]) => {
     if (dateEndKey !== dateStartKey) {
       addToGroup(dateEndKey, event);
     }
-
-    return groups;
   });
+  return groups;
 };
 
 const Calendar: React.FC<Props> = ({ events, loadUserEvents }): JSX.Element => {
@@ -60,10 +61,12 @@ const Calendar: React.FC<Props> = ({ events, loadUserEvents }): JSX.Element => {
     loadUserEvents();
   }, []);
 
+  console.log(events);
+
   let groupedEvents: ReturnType<typeof groupEventsByDay> | undefined;
   let sortedGroupKeys: string[] | undefined;
 
-  if (events?.length) {
+  if (events.length) {
     groupedEvents = groupEventsByDay(events);
     sortedGroupKeys = Object.keys(groupedEvents).sort(
       (a, b) => +new Date(a) - +new Date(b)
@@ -85,12 +88,12 @@ const Calendar: React.FC<Props> = ({ events, loadUserEvents }): JSX.Element => {
               </span>
             </div>
             <div className="calendar-events">
-              {events?.map((event) => {
+              {events.map((event) => {
                 return (
-                  <div key={event} className="calendar-event">
+                  <div key={event.id} className="calendar-event">
                     <div className="calendar-event-info">
                       <div className="calendar-event-time">10:00 - 12:00</div>
-                      <div className="calendar-event-title">Lerning Redux</div>
+                      <div className="calendar-event-title">{event.title}</div>
                     </div>
                     <button className="calendar-delete-button">&times;</button>
                   </div>
@@ -106,4 +109,4 @@ const Calendar: React.FC<Props> = ({ events, loadUserEvents }): JSX.Element => {
   );
 };
 
-export default Calendar;
+export default connector(Calendar);
